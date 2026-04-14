@@ -15,7 +15,7 @@ This project applies machine learning methodologies to forecast student success 
 - **Random Forest:** Low bias / high variance ensemble model (Chosen Model).
 
 ## Dependencies
-Since there is no requirements.txt, please ensure you have the following Python libraries installed before running the project:
+Ensure you have the following Python libraries installed before running the project:
 
 - pandas
 - numpy
