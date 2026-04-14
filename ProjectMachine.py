@@ -17,7 +17,13 @@ por = pd.read_csv("student-por.csv", sep=";")
 
 df = pd.concat([math, por], ignore_index=True)
 
-print("Dataset shape:", df.shape)
+# ENFORCING IID ASSUMPTION: Drop duplicate students appearing in both Math and Portuguese sets.
+identifying_attributes = ["school","sex","age","address","famsize","Pstatus",
+                          "Medu","Fedu","Mjob","Fjob","reason","nursery","internet"]
+df = df.drop_duplicates(subset=identifying_attributes, keep='first')
+
+
+print("Corrected deduplicated dataset shape:", df.shape)
 
 # Making the target variable which is which student will be at risk
 df['AtRisk'] = (df['G3'] < 10).astype(int)
@@ -72,13 +78,21 @@ preprocessor = ColumnTransformer([
 ])
 
 # Creating models using random forest and logistic regression
+# 1. Logistic Regression (High Bias / Low Variance Baseline)
 log_model = Pipeline([
     ('preprocess', preprocessor),
-    ('model', LogisticRegression(max_iter=1000))
+    # max_iter=1000 is chosen to ensure the underlying gradient descent 
+    # optimization (lbfgs solver) fully converges to the global minimum 
+    # of the convex loss surface without throwing ConvergenceWarnings.
+    ('model', LogisticRegression(max_iter=1000)) 
 ])
 
+# 2. Random Forest (Low Bias / High Variance Management)
 rf_model = Pipeline([
     ('preprocess', preprocessor),
+    # n_estimators=100 is chosen to create sufficient diversity in the ensemble 
+    # to reduce variance (via bagging) without incurring unnecessary computational overhead.
+    # random_state=42 ensures stochastic reproducibility across runs.
     ('model', RandomForestClassifier(n_estimators=100, random_state=42))
 ])
 
